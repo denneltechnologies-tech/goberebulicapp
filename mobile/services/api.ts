@@ -6,7 +6,7 @@ import type { ApiResponse } from '../types';
 
 const api = axios.create({
   baseURL: API_BASE,
-  timeout: 20000,
+  timeout: 30000,
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
@@ -40,8 +40,12 @@ export async function request<T>(config: AxiosRequestConfig): Promise<T> {
   } catch (err) {
     const error = err as AxiosError<ApiResponse>;
     const status = error.response?.status ?? 0;
-    const message =
+    let message =
       error.response?.data?.message ?? error.message ?? 'Something went wrong. Please try again.';
+    if (status === 0 || error.code === 'ECONNABORTED') {
+      message =
+        'Unable to reach our servers. Check your internet connection and try again.';
+    }
     throw new ApiError(message, status, error.response?.data?.errors);
   }
 }

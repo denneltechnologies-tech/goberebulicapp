@@ -23,6 +23,7 @@ export default function ProductDetailScreen() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [addError, setAddError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
   const load = useCallback(async () => {
@@ -47,12 +48,13 @@ export default function ProductDetailScreen() {
       return;
     }
     setAdding(true);
+    setAddError(null);
     try {
       const cart = await addToCart(productId);
       setCart(cart);
       router.push('/(app)/(tabs)');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Failed to add to cart.');
+      setAddError(err instanceof ApiError ? err.message : 'Failed to add to cart.');
     } finally {
       setAdding(false);
     }
@@ -117,6 +119,7 @@ export default function ProductDetailScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
+        {addError ? <Text style={styles.addError}>{addError}</Text> : null}
         <Button
           title={user ? 'Add to Cart' : 'Sign In to Buy'}
           onPress={handleAdd}
@@ -231,6 +234,13 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     padding: spacing.md,
     paddingBottom: spacing.lg,
+  },
+  addError: {
+    color: colors.danger,
+    fontSize: 13.5,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: spacing.sm,
   },
   footerBtn: {
     ...shadow.button,
