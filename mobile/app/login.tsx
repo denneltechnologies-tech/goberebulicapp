@@ -8,7 +8,7 @@ import { Input } from '../components/Input';
 import { Screen } from '../components/Screen';
 import { colors, radius, shadow, spacing, typography } from '../constants/theme';
 import { login } from '../services/auth';
-import { ApiError } from '../services/api';
+import { getErrorMessage } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 
 export default function LoginScreen() {
@@ -26,7 +26,7 @@ export default function LoginScreen() {
       await signIn(data.token, data.user);
       router.replace('/(app)/(tabs)');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Unable to sign in.');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

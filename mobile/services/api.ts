@@ -46,4 +46,17 @@ export async function request<T>(config: AxiosRequestConfig): Promise<T> {
   }
 }
 
+export function getErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    for (const key of Object.keys(err.errors ?? {})) {
+      const fieldErrors = err.errors?.[key];
+      if (fieldErrors && fieldErrors.length > 0) {
+        return fieldErrors[0];
+      }
+    }
+    return err.message;
+  }
+  return 'Something went wrong. Please try again.';
+}
+
 export default api;
