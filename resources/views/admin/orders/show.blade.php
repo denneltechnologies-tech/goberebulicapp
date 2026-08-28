@@ -3,8 +3,8 @@
 @section('title', 'Order ' . $order->order_number)
 @section('content')
     <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 style="font-size:16px;">Order {{ $order->order_number }}</h3>
+        <div class="page-head">
+            <h3 class="page-title">Order {{ $order->order_number }}</h3>
             <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary btn-sm">Back to Orders</a>
         </div>
         <table style="max-width:600px;">
@@ -50,15 +50,15 @@
         <h3 style="margin-bottom:16px;">Update Order Status</h3>
         <form method="POST" action="{{ route('admin.orders.status', $order) }}">
             @csrf @method('PATCH')
-            <div style="display:flex;gap:10px;align-items:center;">
-                <select name="order_status" style="padding:10px;border:1px solid #d1d5db;border-radius:6px;">
+            <div class="toolbar">
+                <select name="order_status" class="search-input">
                     @foreach(['PENDING','PAYMENT_PENDING','PAID','PROCESSING','READY','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'] as $s)
                         <option value="{{ $s }}" @if($order->order_status===$s)selected @endif>{{ $s }}</option>
                     @endforeach
                 </select>
                 <button type="submit" class="btn btn-primary">Update Status</button>
             </div>
-            <p class="muted" style="margin-top:8px;">Note: Only valid status transitions are permitted.</p>
+            <p class="muted mt-2">Note: Only valid status transitions are permitted.</p>
         </form>
     </div>
 @endsection

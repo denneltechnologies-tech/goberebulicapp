@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useMemo, useState } from 'react';
@@ -6,7 +7,7 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, S
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Screen } from '../../components/Screen';
-import { colors, radius, spacing } from '../../constants/theme';
+import { colors, radius, shadow, spacing, typography } from '../../constants/theme';
 import { ApiError } from '../../services/api';
 import { fetchCart } from '../../services/cart';
 import { checkout } from '../../services/orders';
@@ -113,55 +114,128 @@ export default function CheckoutScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.sectionTitle}>Delivery Information</Text>
-        <Input label="Recipient Name" value={recipientName} onChangeText={setRecipientName} placeholder="Full name" />
-        <Input label="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="+234..." />
-        <Input label="Address" value={address} onChangeText={setAddress} placeholder="Street, area" />
-        <Input label="City" value={city} onChangeText={setCity} placeholder="City" />
-        <Input label="Additional Notes (optional)" value={notes} onChangeText={setNotes} multiline />
+    <Screen safeEdges={[]}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <View style={styles.sectionHead}>
+            <View style={styles.sectionIcon}>
+              <Ionicons name="location-outline" color={colors.primary} size={20} />
+            </View>
+            <Text style={styles.sectionTitle}>Delivery Information</Text>
+          </View>
+          <View style={styles.card}>
+            <Input label="Recipient Name" value={recipientName} onChangeText={setRecipientName} placeholder="Full name" />
+            <Input label="Phone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="+234..." />
+            <Input label="Address" value={address} onChangeText={setAddress} placeholder="Street, area" />
+            <Input label="City" value={city} onChangeText={setCity} placeholder="City" />
+            <Input label="Additional Notes (optional)" value={notes} onChangeText={setNotes} multiline />
+          </View>
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? (
+            <View style={styles.errorBox}>
+              <Ionicons name="alert-circle" color={colors.danger} size={18} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
 
-        <View style={styles.summary}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>₦{subtotal.toLocaleString()}</Text>
+          <View style={styles.sectionHead}>
+            <View style={styles.sectionIcon}>
+              <Ionicons name="receipt-outline" color={colors.primary} size={20} />
+            </View>
+            <Text style={styles.sectionTitle}>Order Summary</Text>
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Delivery</Text>
-            <Text style={styles.summaryValue}>₦{deliveryFee.toLocaleString()}</Text>
+          <View style={styles.card}>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryValue}>₦{subtotal.toLocaleString()}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Delivery</Text>
+              <Text style={styles.summaryValue}>₦{deliveryFee.toLocaleString()}</Text>
+            </View>
+            <View style={[styles.summaryRow, styles.totalRow]}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalValue}>₦{total.toLocaleString()}</Text>
+            </View>
           </View>
-          <View style={[styles.summaryRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>₦{total.toLocaleString()}</Text>
-          </View>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <Button title="Place Order & Pay" onPress={placeOrder} loading={submitting} />
         </View>
-
-        <Button title="Place Order & Pay" onPress={placeOrder} loading={submitting} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  content: { padding: spacing.lg, paddingBottom: spacing.xl },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
-  error: { color: colors.danger, marginBottom: spacing.md },
-  summary: {
+  content: { padding: spacing.md, paddingBottom: spacing.xl },
+  sectionHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  sectionIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: radius.full,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionTitle: {
+    ...typography.heading,
+    fontSize: 17,
+  },
+  card: {
     backgroundColor: colors.surface,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.md,
-    marginVertical: spacing.lg,
+    ...shadow.card,
+  },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: radius.md,
+    padding: spacing.sm + 2,
+    marginTop: spacing.md,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: 13,
+    fontWeight: '500',
+    flex: 1,
   },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm },
-  totalRow: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm, marginTop: spacing.sm },
+  totalRow: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: spacing.sm + 2,
+    marginTop: spacing.sm,
+    marginBottom: 0,
+  },
   summaryLabel: { color: colors.textMuted, fontSize: 15 },
   summaryValue: { color: colors.text, fontWeight: '600', fontSize: 15 },
   totalLabel: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  totalValue: { color: colors.primaryDark, fontSize: 16, fontWeight: '800' },
+  totalValue: { color: colors.primaryDark, fontSize: 17, fontWeight: '800' },
+  footer: {
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    padding: spacing.md,
+    paddingBottom: spacing.lg,
+  },
 });

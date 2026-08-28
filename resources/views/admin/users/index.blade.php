@@ -3,8 +3,8 @@
 @section('title', 'Admin Users')
 @section('content')
     <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 style="font-size:16px;">Admin Users ({{ $users->total() }})</h3>
+        <div class="page-head">
+            <h3 class="page-title">Admin Users ({{ $users->total() }})</h3>
             <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Add Admin User</a>
         </div>
         <table>

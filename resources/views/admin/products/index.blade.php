@@ -3,11 +3,11 @@
 @section('title', 'Products')
 @section('content')
     <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 style="font-size:16px;">All Products ({{ $products->total() }})</h3>
-            <div style="display:flex;gap:8px;">
-                <form method="GET" style="display:flex;gap:8px;">
-                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Search products..." style="padding:8px;border:1px solid #d1d5db;border-radius:6px;">
+        <div class="page-head">
+            <h3 class="page-title">All Products ({{ $products->total() }})</h3>
+            <div class="toolbar">
+                <form method="GET" class="toolbar">
+                    <input type="text" class="search-input" name="q" value="{{ request('q') }}" placeholder="Search products...">
                     <button class="btn btn-secondary">Search</button>
                 </form>
                 <a href="{{ route('admin.products.create') }}" class="btn btn-primary">Add Product</a>
@@ -17,6 +17,7 @@
         @if($products->isEmpty())
             <p class="muted">No products found.</p>
         @else
+        <div class="table-wrap">
         <table>
             <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
@@ -40,6 +41,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
         <div class="pagination">{{ $products->links() }}</div>
         @endif
     </div>

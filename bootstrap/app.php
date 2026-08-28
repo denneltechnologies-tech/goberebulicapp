@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
 
+        // The web app has no customer login; all authenticated web routes are admin.
+        $middleware->redirectGuestsTo('/admin/login');
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdminRole::class,
             'admin.web' => \App\Http\Middleware\EnsureAdminWeb::class,

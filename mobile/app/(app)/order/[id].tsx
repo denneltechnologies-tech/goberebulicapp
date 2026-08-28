@@ -1,10 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '../../../components/Button';
 import { Screen } from '../../../components/Screen';
-import { colors, radius, spacing } from '../../../constants/theme';
+import { colors, radius, shadow, spacing, typography } from '../../../constants/theme';
 import { ApiError } from '../../../services/api';
 import { fetchOrder } from '../../../services/orders';
 import { initializePayment, verifyPayment } from '../../../services/payment';
@@ -69,27 +70,41 @@ export default function OrderDetailScreen() {
   if (error || !order) {
     return (
       <Screen style={styles.center}>
+        <View style={styles.errorIcon}>
+          <Ionicons name="alert-circle-outline" color={colors.danger} size={40} />
+        </View>
         <Text style={styles.error}>{error ?? 'Order not found.'}</Text>
       </Screen>
     );
   }
 
+  const paid = order.payment_status === 'SUCCESSFUL' || order.payment_status === 'paid';
   const canPay = order.payment_status === 'pending' || order.payment_status === 'failed';
 
   return (
-    <Screen>
+    <Screen safeEdges={[]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.orderNumber}>{order.order_number}</Text>
-        <View style={styles.statusRow}>
-          <View style={[styles.badge, { backgroundColor: order.order_status === 'cancelled' ? '#fee2e2' : '#dcfce7' }]}>
-            <Text style={styles.badgeText}>Order: {titleCase(order.order_status)}</Text>
-          </View>
-          <View style={[styles.badge, { backgroundColor: order.payment_status === 'paid' ? '#dcfce7' : '#fef3c7' }]}>
-            <Text style={styles.badgeText}>Payment: {titleCase(order.payment_status)}</Text>
+        <View style={styles.headCard}>
+          <Text style={styles.orderNumber}>{order.order_number}</Text>
+          <Text style={styles.meta}>Placed {formatDate(order.created_at)}</Text>
+          <View style={styles.statusRow}>
+            <View style={[styles.badge, orderStatusStyle(order.order_status)]}>
+              <Ionicons name={orderStatusIcon(order.order_status)} color={colors.dark} size={13} />
+              <Text style={styles.badgeText}>Order: {titleCase(order.order_status)}</Text>
+            </View>
+            <View style={[styles.badge, paid ? styles.badgePaid : styles.badgePending]}>
+              <Ionicons name={paid ? 'checkmark-circle' : 'time-outline'} color={colors.dark} size={13} />
+              <Text style={styles.badgeText}>Payment: {titleCase(order.payment_status)}</Text>
+            </View>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Items</Text>
+        <View style={styles.sectionHead}>
+          <View style={styles.sectionIcon}>
+            <Ionicons name="bag-handle-outline" color={colors.primary} size={18} />
+          </View>
+          <Text style={styles.sectionTitle}>Items</Text>
+        </View>
         <View style={styles.card}>
           {(order.items ?? []).map((item) => (
             <View key={item.id} style={styles.itemRow}>
@@ -102,6 +117,7 @@ export default function OrderDetailScreen() {
               <Text style={styles.itemTotal}>₦{Number(item.total).toLocaleString()}</Text>
             </View>
           ))}
+          <View style={[styles.divider]} />
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
             <Text style={styles.summaryValue}>₦{Number(order.subtotal).toLocaleString()}</Text>
@@ -118,7 +134,12 @@ export default function OrderDetailScreen() {
 
         {order.delivery_information ? (
           <>
-            <Text style={styles.sectionTitle}>Delivery</Text>
+            <View style={styles.sectionHead}>
+              <View style={styles.sectionIcon}>
+                <Ionicons name="location-outline" color={colors.primary} size={18} />
+              </View>
+              <Text style={styles.sectionTitle}>Delivery</Text>
+            </View>
             <View style={styles.card}>
               <Text style={styles.deliveryName}>{order.delivery_information.recipient_name}</Text>
               <Text style={styles.deliveryMeta}>{order.delivery_information.phone}</Text>
@@ -133,8 +154,6 @@ export default function OrderDetailScreen() {
           </>
         ) : null}
 
-        <Text style={styles.meta}>Placed: {formatDate(order.created_at)}</Text>
-
         {canPay ? (
           <Button title="Pay Now" onPress={retryPayment} loading={paying} style={styles.payBtn} />
         ) : null}
@@ -147,6 +166,20 @@ function titleCase(value: string | null | undefined): string {
   if (!value) return '—';
   const readable = value.replace(/_/g, ' ').replace(/-/g, ' ');
   return readable.charAt(0).toUpperCase() + readable.slice(1);
+}
+
+function orderStatusStyle(status: string) {
+  if (status === 'completed' || status === 'delivered') return styles.badgePaid;
+  if (status === 'cancelled' || status === 'failed') return styles.badgeCancelled;
+  if (status === 'processing' || status === 'shipped') return styles.badgeProcessing;
+  return styles.badgePending;
+}
+
+function orderStatusIcon(status: string) {
+  if (status === 'completed' || status === 'delivered') return 'checkmark-circle' as const;
+  if (status === 'cancelled' || status === 'failed') return 'close-circle' as const;
+  if (status === 'processing' || status === 'shipped') return 'cog' as const;
+  return 'time-outline' as const;
 }
 
 function formatDate(value: string | null): string {
@@ -163,28 +196,73 @@ function formatDate(value: string | null): string {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
+  errorIcon: { marginBottom: spacing.md },
   error: { color: colors.danger, fontSize: 16 },
-  content: { padding: spacing.lg, paddingBottom: spacing.xl },
-  orderNumber: { fontSize: 22, fontWeight: '800', color: colors.text },
-  statusRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm, marginBottom: spacing.lg, flexWrap: 'wrap' },
-  badge: { paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radius.full },
-  badgeText: { fontSize: 12, fontWeight: '700', color: colors.text },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: colors.text, marginTop: spacing.md, marginBottom: spacing.sm },
-  card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.md },
-  itemRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm },
+  content: { padding: spacing.md, paddingBottom: spacing.xl },
+  headCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    ...shadow.card,
+  },
+  orderNumber: { ...typography.heading, fontSize: 20 },
+  meta: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
+  statusRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: 5,
+    borderRadius: radius.full,
+    backgroundColor: colors.primaryLight,
+  },
+  badgePaid: { backgroundColor: '#dcfce7' },
+  badgePending: { backgroundColor: colors.primaryLight },
+  badgeCancelled: { backgroundColor: '#fee2e2' },
+  badgeProcessing: { backgroundColor: '#dbeafe' },
+  badgeText: { fontSize: 12, fontWeight: '700', color: colors.dark },
+  sectionHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  sectionIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: radius.full,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionTitle: { ...typography.heading, fontSize: 16 },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    ...shadow.card,
+  },
+  itemRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.md },
   itemInfo: { flex: 1, marginRight: spacing.md },
   itemName: { color: colors.text, fontWeight: '600', fontSize: 15 },
   itemMeta: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
   itemTotal: { color: colors.text, fontWeight: '600' },
+  divider: { height: 1, backgroundColor: colors.border, marginBottom: spacing.sm },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.sm },
   summaryLabel: { color: colors.textMuted, fontSize: 14 },
   summaryValue: { color: colors.text, fontWeight: '600', fontSize: 14 },
-  totalRow: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm },
+  totalRow: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm + 2, marginTop: spacing.sm },
   totalLabel: { color: colors.text, fontWeight: '700', fontSize: 15 },
   totalValue: { color: colors.primaryDark, fontWeight: '800', fontSize: 15 },
   deliveryName: { color: colors.text, fontWeight: '700', fontSize: 15 },
   deliveryMeta: { color: colors.textMuted, fontSize: 14, marginTop: spacing.xs },
   deliveryNotes: { color: colors.text, fontStyle: 'italic', fontSize: 14, marginTop: spacing.sm },
-  meta: { color: colors.textMuted, fontSize: 13, marginTop: spacing.lg },
   payBtn: { marginTop: spacing.lg },
 });

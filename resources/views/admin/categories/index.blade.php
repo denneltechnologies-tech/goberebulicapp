@@ -3,11 +3,11 @@
 @section('title', 'Categories')
 @section('content')
     <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 style="font-size:16px;">All Categories ({{ $categories->total() }})</h3>
-            <div style="display:flex;gap:8px;">
-                <form method="GET" style="display:flex;gap:8px;">
-                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Search categories..." style="padding:8px;border:1px solid #d1d5db;border-radius:6px;">
+        <div class="page-head">
+            <h3 class="page-title">All Categories ({{ $categories->total() }})</h3>
+            <div class="toolbar">
+                <form method="GET" class="toolbar">
+                    <input type="text" class="search-input" name="q" value="{{ request('q') }}" placeholder="Search categories...">
                     <button class="btn btn-secondary">Search</button>
                 </form>
                 <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">Add Category</a>
@@ -16,6 +16,7 @@
         @if($categories->isEmpty())
             <p class="muted">No categories found.</p>
         @else
+        <div class="table-wrap">
         <table>
             <thead><tr><th>Image</th><th>Name</th><th>Products</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
@@ -38,6 +39,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
         <div class="pagination">{{ $categories->links() }}</div>
         @endif
     </div>

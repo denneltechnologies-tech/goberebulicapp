@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, Text, TextInput, type TextInputProps, View } from 'react-native';
 
 import { colors, radius, spacing } from '../constants/theme';
@@ -7,13 +8,28 @@ interface InputProps extends TextInputProps {
   error?: string;
 }
 
-export function Input({ label, error, style, ...rest }: InputProps) {
+export function Input({ label, error, style, onFocus, onBlur, ...rest }: InputProps) {
+  const [focused, setFocused] = useState(false);
+
   return (
     <View style={styles.container}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
       <TextInput
         placeholderTextColor={colors.textMuted}
-        style={[styles.input, error ? styles.inputError : undefined, style]}
+        style={[
+          styles.input,
+          focused && styles.inputFocused,
+          error ? styles.inputError : undefined,
+          style,
+        ]}
+        onFocus={(e) => {
+          setFocused(true);
+          onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setFocused(false);
+          onBlur?.(e);
+        }}
         {...rest}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -26,20 +42,26 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.text,
     marginBottom: spacing.xs,
+    marginLeft: spacing.xs,
   },
   input: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
-    height: 50,
+    paddingVertical: spacing.sm,
+    minHeight: 52,
     fontSize: 16,
     color: colors.text,
     backgroundColor: colors.white,
+  },
+  inputFocused: {
+    borderColor: colors.primary,
+    backgroundColor: colors.tint,
   },
   inputError: {
     borderColor: colors.danger,
@@ -48,5 +70,6 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontSize: 12,
     marginTop: spacing.xs,
+    marginLeft: spacing.xs,
   },
 });

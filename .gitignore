@@ -36,6 +36,11 @@ Thumbs.db
 # IDE
 *.swp
 
+# Agent/tooling artifacts (not part of the app)
+/.agents/
+/skills-lock.json
+/0
+
 # Hostinger deploy artifacts (local only)
 /gobe-production.zip
 /gobe-deploy-seagreen.zip

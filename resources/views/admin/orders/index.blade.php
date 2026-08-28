@@ -3,17 +3,17 @@
 @section('title', 'Orders')
 @section('content')
     <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-            <h3 style="font-size:16px;">All Orders ({{ $orders->total() }})</h3>
-            <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;">
-                <input type="text" name="q" value="{{ request('q') }}" placeholder="Order number..." style="padding:8px;border:1px solid #d1d5db;border-radius:6px;">
-                <select name="order_status" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;">
+        <div class="page-head">
+            <h3 class="page-title">All Orders ({{ $orders->total() }})</h3>
+            <form method="GET" class="toolbar">
+                <input type="text" class="search-input" name="q" value="{{ request('q') }}" placeholder="Order number...">
+                <select name="order_status" class="search-input">
                     <option value="">All statuses</option>
                     @foreach(['PENDING','PAYMENT_PENDING','PAID','PROCESSING','READY','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'] as $s)
                         <option value="{{ $s }}" @if(request('order_status')===$s)selected @endif>{{ $s }}</option>
                     @endforeach
                 </select>
-                <select name="payment_status" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;">
+                <select name="payment_status" class="search-input">
                     <option value="">All payments</option>
                     @foreach(['PENDING','SUCCESSFUL','FAILED','CANCELLED','REFUNDED'] as $s)
                         <option value="{{ $s }}" @if(request('payment_status')===$s)selected @endif>{{ $s }}</option>
@@ -25,6 +25,7 @@
         @if($orders->isEmpty())
             <p class="muted">No orders found.</p>
         @else
+        <div class="table-wrap">
         <table>
             <thead><tr><th>Order #</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th></th></tr></thead>
             <tbody>
@@ -41,6 +42,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
         <div class="pagination">{{ $orders->links() }}</div>
         @endif
     </div>

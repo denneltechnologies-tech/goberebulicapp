@@ -8,7 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { colors, radius, spacing } from '../constants/theme';
+import { colors, radius, shadow, spacing } from '../constants/theme';
 
 interface ButtonProps extends PressableProps {
   title: string;
@@ -18,20 +18,21 @@ interface ButtonProps extends PressableProps {
 }
 
 export function Button({ title, variant = 'primary', loading, disabled, style, ...rest }: ButtonProps) {
-  const bg =
-    variant === 'primary'
-      ? colors.primary
-      : variant === 'danger'
-        ? colors.danger
-        : 'transparent';
+  const isPrimary = variant === 'primary' || variant === 'danger';
+  const bg = variant === 'primary' ? colors.primary : variant === 'danger' ? colors.danger : 'transparent';
   const border = variant === 'outline' ? colors.primary : 'transparent';
-  const fg = variant === 'outline' || variant === 'ghost' ? colors.primary : colors.white;
+  const fg = variant === 'outline' || variant === 'ghost' ? colors.primaryDark : colors.white;
 
   return (
     <Pressable
       style={({ pressed }) => [
         styles.base,
-        { backgroundColor: bg, borderColor: border, borderWidth: variant === 'outline' ? 1 : 0 },
+        {
+          backgroundColor: bg,
+          borderColor: border,
+          borderWidth: variant === 'outline' ? 1.5 : 0,
+        },
+        isPrimary && styles.primaryShadow,
         pressed && styles.pressed,
         disabled && styles.disabled,
         style,
@@ -50,18 +51,22 @@ export function Button({ title, variant = 'primary', loading, disabled, style, .
 
 const styles = StyleSheet.create({
   base: {
-    height: 50,
-    borderRadius: radius.md,
+    minHeight: 52,
+    borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
+  primaryShadow: shadow.button,
   pressed: {
-    opacity: 0.85,
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
   },
   disabled: {
     opacity: 0.5,

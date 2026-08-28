@@ -7,7 +7,6 @@ import { registerPushToken } from '../services/pushNotifications';
 
 export default function RootLayout() {
   const user = useAuthStore((s) => s.user);
-  const isHydrated = useAuthStore((s) => s.isHydrated);
 
   useEffect(() => {
     if (user) {
@@ -15,12 +14,15 @@ export default function RootLayout() {
     }
   }, [user]);
 
-  const initialRoute = !isHydrated || !user ? '(app)/index' : '(app)/(tabs)';
-
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }} initialRouteName={initialRoute} />
+      <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
+        <Stack.Screen name="index" />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="register" />
+        <Stack.Screen name="(app)" />
+      </Stack>
     </>
   );
 }

@@ -8,6 +8,6 @@ export default function Index() {
 
   // Redirect based on auth state. The (app) group layout also guards.
   if (!isHydrated) return null;
-  if (!user) return <Redirect href="/(app)/login" />;
+  if (!user) return <Redirect href="/login" />;
   return <Redirect href="/(app)/(tabs)" />;
 }
