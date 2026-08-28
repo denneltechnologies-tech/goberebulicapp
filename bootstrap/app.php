@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
 
+        // Trust the reverse proxy (Railway edge) so HTTPS (X-Forwarded-Proto)
+        // is honoured and url()/redirect() generate https:// links.
+        $middleware->trustProxies(at: '*');
+
         // The web app has no customer login; all authenticated web routes are admin.
         $middleware->redirectGuestsTo('/admin/login');
 
